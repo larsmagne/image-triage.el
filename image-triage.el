@@ -730,9 +730,10 @@ things up.)"
     (set-buffer-multibyte nil)
     (cond
      ((file-exists-p (image-triage--jpgpreview))
-      (call-process (image-triage--jpgpreview) nil t nil "preview" file))
+      (call-process (image-triage--jpgpreview) nil '(t nil) nil
+		    "preview" file))
      (t
-      (call-process "exiftool" nil t nil
+      (call-process "exiftool" nil '(t nil) nil
 		    "-json" "-a" "-G1" "-s"
 		    "-preview:all" file)
       (goto-char (point-min))
@@ -744,10 +745,10 @@ things up.)"
 		       return (substring (symbol-name slot) 1))))
 	(erase-buffer)
 	(if preview-name
-	    (call-process "exiftool" nil t nil
+	    (call-process "exiftool" nil '(t nil) nil
 			  "-b" (concat "-" preview-name) file)
 	  ;; No preview -- downscale ourselves.
-	  (call-process "convert" nil t nil
+	  (call-process "convert" nil '(t nil) nil
 			"-resize" "800x" file "jpg:-")))))
     (buffer-string)))
 
@@ -943,6 +944,7 @@ Otherwise, create a new buffer."
       (make-process
        :name "exiftool"
        :buffer (generate-new-buffer " *exiftool*")
+       :stderr (get-buffer-create " *image-triage stderr*")
        :command (list "exiftool" "-json" "-a" "-G1" "-s"
 		      "-preview:all" file)
        :sentinel
@@ -990,6 +992,7 @@ Otherwise, create a new buffer."
     (make-process
      :name "exiftool"
      :buffer (current-buffer)
+     :stderr (get-buffer-create " *image-triage stderr*")
      :command (cond
 	       (fast
 		(list fast thumbnail-name file))
