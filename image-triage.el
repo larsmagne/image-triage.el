@@ -731,12 +731,16 @@ things up.)"
   (expand-file-name
    "jpgpreview" (file-name-directory (find-library-name "image-triage.el"))))
 
-(defun image-triage--preview (file)
+(defun image-triage--preview (file &optional inhibit-fast)
   (with-temp-buffer
     (set-buffer-multibyte nil)
     (cond
-     ((file-exists-p (image-triage--jpgpreview))
-      (call-process (image-triage--jpgpreview) nil t nil "preview" file))
+     ((and (not inhibit-fast)
+	   (file-exists-p (image-triage--jpgpreview)))
+      (call-process (image-triage--jpgpreview) nil t nil "preview" file)
+      (if (zerop (buffer-size))
+	  (image-triage--preview file t)
+	(buffer-string)))
      (t
       (call-process "exiftool" nil t nil
 		    "-json" "-a" "-G1" "-s"
@@ -754,8 +758,8 @@ things up.)"
 			  "-b" (concat "-" preview-name) file)
 	  ;; No preview -- downscale ourselves.
 	  (call-process "convert" nil t nil
-			"-resize" "800x" file "jpg:-")))))
-    (buffer-string)))
+			"-resize" "800x" file "jpg:-")))
+      (buffer-string)))))
 
 (defun image-triage--create-buffer (file)
   "If a buffer for FILE exists, return it.
