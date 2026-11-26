@@ -73,6 +73,8 @@ layout."
 			;; `case-fold-search', so we do it the hard
 			;; way.
 			(directory-files directory t)))))
+    (unless files
+      (user-error "No images in %s to display" directory))
     (image-triage--setup directory files override-layout)
     (setq-local image-triage--list-mode 'directory)))
 
@@ -88,6 +90,8 @@ layout."
 		 (directory-files-recursively
 		  (expand-file-name directory)
 		  (mapconcat #'car image-triage-file-name-regexps "\\|")))))
+    (unless files
+      (user-error "No images under %s to display" directory))
     (image-triage--setup directory files override-layout)
     (setq-local image-triage--list-mode 'tree)))
 
@@ -216,7 +220,7 @@ layout."
 			  t))
 	(line-height (+ (truncate (* (/ (cdr size) (float (car size)))
 				     image-triage-thumbnail-width))
-			30))
+			10))
 	(column 0))
     ;; Save this for later use, too.
     (setq-local image-triage--line-height line-height)
@@ -276,6 +280,8 @@ layout."
   "SPC" #'image-triage-list-toggle-mark
   "TAB" #'image-triage-list-display-next
   "<backtab>" #'image-triage-list-display-previous
+  "n" #'image-triage-list-display-next
+  "p" #'image-triage-list-display-previous
   "m" #'image-triage-list-mark
   "U" #'image-triage-list-unmark-all
   "u" #'image-triage-list-unmark
